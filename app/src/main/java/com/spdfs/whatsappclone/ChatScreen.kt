@@ -5,6 +5,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
 import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -27,6 +28,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.getValue
@@ -45,35 +47,47 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 
-data class Message(
-    var message: String, var isSentByUser : Boolean
-)
 
-class ChatScreen () : ComponentActivity() {
+class ChatScreen : ComponentActivity() {
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+            override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent {
 
-            WhatsAppChatScreen()
+
+        setContent {
+            MaterialTheme {
+                Surface {
+
+                    // Call the CounterScreen composable
+                    WhatsAppChatScreen()
+                }
+            }
+
         }
     }
 
 }
-@OptIn(ExperimentalMaterial3Api::class)
 
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WhatsAppChatScreen( ) {
-    var message by remember { mutableStateOf(TextFieldValue("")) }
+    val viewModel : ChatViewModel = viewModel()
+    val messages by viewModel.messages
+    var inputText by remember { mutableStateOf(TextFieldValue("")) }
 
-    var messages by remember { mutableStateOf(
-        listOf(
-            Message("Hey, how are you?", isSentByUser = false),
-            Message("I'm good! How about you?", isSentByUser = true),
-            Message("I'm doing great!", isSentByUser = false)
-        )
-    ) }
+
+    /*    var message by remember { mutableStateOf(TextFieldValue("")) }
+
+        var messages by remember { mutableStateOf(
+            listOf(
+                Message("Hey, how are you?", isSentByUser = false),
+                Message("I'm good! How about you?", isSentByUser = true),
+                Message("I'm doing great!", isSentByUser = false)
+            )
+        ) }*/
 
     Column(
         modifier = Modifier
@@ -93,13 +107,23 @@ fun WhatsAppChatScreen( ) {
             verticalArrangement = Arrangement.spacedBy(space = 8.dp),
             horizontalAlignment = Alignment.End
         ) {
-            items(messages) { message ->
-                if (message.isSentByUser) {
-                    MessageCard(message = message)
-                } else {
-                    MessageCard(message = message)
-                }
+
+            items(messages.size) { index ->
+                val message = messages[index]
+                MessageCard(message = message)
             }
+
+
+//            items(messages.value) { message ->
+//
+//
+//                if (message.isSentByUser) {
+//
+//                    MessageCard(message = message)
+//                } else {
+//                    MessageCard(message = message)
+//                }
+//            }
         }
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -111,8 +135,8 @@ fun WhatsAppChatScreen( ) {
 
         ) {
             BasicTextField(
-                value = message,
-                onValueChange = { message = it },
+                value = inputText,
+                onValueChange = { inputText = it },
                 keyboardOptions = KeyboardOptions.Default.copy(
                     imeAction = ImeAction.Send
                 ),
@@ -127,10 +151,16 @@ fun WhatsAppChatScreen( ) {
 
             Button(
                 onClick = {
-                    if (message.text.isNotEmpty()) {
-                        messages = messages + Message(message.text, isSentByUser = false)
+                    if (inputText.text.isNotEmpty()) {
+                        viewModel.sendUserMessage(inputText.text)
 
-                        message = TextFieldValue("")
+
+//                        // Add the user message to the list
+//                        viewModel.addMessage(inputText.text, true)
+//                        // Simulate bot response
+
+
+                        inputText = TextFieldValue("")
                     }
                 },
                 modifier = Modifier.padding(start = 8.dp),
@@ -166,7 +196,7 @@ Row {
 @Composable
 fun MessageCard(message: Message) {
     val alignment = if (message.isSentByUser) Alignment.End else Alignment.Start
-    val backgroundColor = if (message.isSentByUser) Color(0xFFDCF8C6) else Color.LightGray
+    val backgroundColor = if (!message.isSentByUser) Color(0xFFDCF8C6) else Color.LightGray
 
     Row(
         modifier = Modifier
@@ -174,7 +204,7 @@ fun MessageCard(message: Message) {
             .padding(vertical = 4.dp)
 
     ) {
-        if (!message.isSentByUser) {
+        if (message.isSentByUser) {
             CircleShapeAvatar(alignment = Alignment.End)
         }
 

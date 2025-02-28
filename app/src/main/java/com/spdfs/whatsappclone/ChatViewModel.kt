@@ -1,5 +1,40 @@
 package com.spdfs.whatsappclone
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.delay
@@ -10,57 +45,43 @@ import kotlinx.coroutines.launch
 
 class ChatViewModel : ViewModel() {
 
-    private val questions = mutableListOf(
-        "What about yesterday?",
-        "Can you tell me what inside your head?",
-        "Lately, I've been wondering if I can really do anything, do you?",
-        "You know fear is often just an illusion, have you ever experienced it?",
-        "If you were me, what would you do?"
-    )
+    // List of messages
+    private val _messages = mutableStateListOf<Message>()
+    val messages: State<List<Message>> = mutableStateOf(_messages)
 
-    val conversation: MutableStateFlow<List<ChatUiModel.Message>>
-        get() = _conversation
-
-    private val _conversation = MutableStateFlow(
-        listOf(ChatUiModel.Message.initConv)
-    )
-
-    // just show you how I initialize the conversation ;)
-
-
-    fun sendChat(msg: String) {
-
-        // wrap the msg as ChatUiModel.Message and assign the author as 'me'
-        val myChat = ChatUiModel.Message(msg, ChatUiModel.Author.me)
-        viewModelScope.launch {
-
-            // add myChat to the conversation
-            _conversation.emit(_conversation.value + myChat)
-
-            // add 1s delay to make it seem more realistic
-            delay(1000)
-
-            // lastly, add a random question to conversation
-            _conversation.emit(_conversation.value + getRandomQuestion())
-        }
+    init {
+        // Adding initial fake messages
+        addMessage("Hi Priya , How are You?", true) // User message
+        addMessage("I am good neha , what about you", false) // Bot reply
     }
 
-    private fun getRandomQuestion(): ChatUiModel.Message {
-
-        // throw a random question, and also define a default message to display when run out of questions.
-        val question = if (questions.isEmpty()) {
-            "no further questions, please leave me alone"
-        } else {
-            questions.random()
-        }
-
-        // remove the question when it is not empty
-        if (questions.isNotEmpty()) questions.remove(question)
-
-        // wrap the q as ChatUiModel.Message and assign the author as 'bot'
-        return ChatUiModel.Message(
-            text = question,
-            author = ChatUiModel.Author.bot
-        )
+    fun addMessage(content: String, isUser: Boolean) {
+        _messages.add(Message(content, isUser))
     }
+
+    fun sendUserMessage(message: String) {
+        addMessage(message, true)
+        // Simulate bot response after a delay
+        android.os.Handler().postDelayed({
+            if(message.contains("I am Fine")){
+                addMessage("how work is going", false)
+            }else if(message == "Its quite nice , what about you"){
+            addMessage("Too much work here !!!!", false)
+            }
+            //addMessage("I'm a bot, responding to your message.", false)
+        }, 1000)  // Delay of 1 second
+    }
+}
+
+data class Message(
+    var message: String, var isSentByUser : Boolean
+)
+
+
+
+
+@Preview
+@Composable
+fun PreviewChatScreen() {
+    WhatsAppChatScreen()
 }
