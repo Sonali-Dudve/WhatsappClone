@@ -10,7 +10,7 @@ android {
     defaultConfig {
         applicationId = "com.spdfs.whatsappclone"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -69,4 +69,19 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.coil.compose)
+
+
+
+    implementation ("io.coil-kt:coil-compose:2.2.2") // Coil for Compose
+    implementation ("androidx.camera:camera-camera2:1.1.0")
+    implementation ("androidx.camera:camera-lifecycle:1.1.0")
+    implementation ("androidx.camera:camera-view:1.1.0")
+    implementation ("com.google.guava:guava:30.1-jre")
+
+    implementation ("androidx.activity:activity-compose:1.3.1")
+    implementation ("androidx.compose.ui:ui:1.3.0")
+    implementation ("androidx.compose.material3:material3:1.0.0")
+    implementation ("androidx.compose.ui:ui-tooling-preview:1.3.0")
+    implementation ("androidx.compose.foundation:foundation:1.3.0")
+    implementation ("androidx.compose.material:material:1.3.0")
 }
